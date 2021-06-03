@@ -146,6 +146,65 @@ EXTERNALDNS=${EXTERNALDNS:-"1.1.1.1"}
 sudo sed -i -e "s/#DNS=/DNS=127.0.0.1 ${EXTERNALDNS}/" -e 's/#Domains=/Domains=~consul/' /etc/systemd/resolved.conf
 sudo systemctl restart systemd-resolved
 
+while [ "$(dig +short loki.service.dc1.consul)" == "" ]; do
+  echo "Waiting Loki to be ready...."
+  sleep 5
+done
+
+# Configuring and starting system Promtail
+#
+# This needs to be done after Loki service
+# has been launched in Docker container
+# by Nomad job scheduling
+#
+(
+cat <<-EOF
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+positions:
+  filename: /tmp/positions.yaml
+client:
+  url: http://$(dig +short loki.service.dc1.consul):3100/loki/api/v1/push
+scrape_configs:
+  - job_name: nginx
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: nginx
+        env: production
+        host: srv1
+        __path__: /var/log/nginx/*.log
+  - job_name: journal
+    journal:
+      max_age: 1h
+      path: /var/log/journal
+      labels:
+        job: systemd
+        env: production
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+EOF
+) | sudo tee /etc/promtail/promtail.yml
+
+(
+cat <<-EOF
+[Unit]
+Description=Promtail service
+After=network.target
+[Service]
+Type=simple
+ExecStart=/opt/bin/promtail -config.file /etc/promtail/promtail.yml
+[Install]
+WantedBy=multi-user.target
+EOF
+) | sudo tee /etc/systemd/system/promtail.service
+
+sudo systemctl enable promtail.service
+sudo systemctl start promtail
+
 SCRIPT
 
 Vagrant.configure(2) do |config|
