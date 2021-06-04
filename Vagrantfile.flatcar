@@ -10,6 +10,29 @@ sudo mkdir -p /etc/nomad.d /etc/nomad /opt/nomad/data/ /etc/consul.d
 # Error due to Flatcar default filesystems permissons restrictions
 #nomad -autocomplete-install
 
+# Netdata registration as Consul service
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "netdata",
+    "port": 19999,
+    "tags": ["monitoring"],
+    "checks": [
+      {
+        "http":     "http://localhost:19999/",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/netdata.json
+
+# Enable and start Netdata systemd service
+sudo systemctl enable netdata.service
+sudo systemctl start netdata
+
 # Node exporter registration as Consul service
 (
 cat <<-EOF
@@ -386,6 +409,8 @@ Vagrant.configure(2) do |config|
   config.vm.network "forwarded_port", guest: 8888, host: 8888
   # cAdvisor
   config.vm.network "forwarded_port", guest: 8080, host: 8080
+  # Netdata
+  config.vm.network "forwarded_port", guest: 19999, host: 19999
 
   # Increase memory for Parallels Desktop
   config.vm.provider "parallels" do |p, o|

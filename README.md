@@ -63,6 +63,7 @@ Then you should be able to access:
 - Loki       => http://127.0.0.1:3100/
 - Nginx      => http://127.0.0.1:8888/ and http://127.0.0.1:8888/demo/
 - cAdvisor   => http://127.0.0.1:8080/
+- Netdata    => http://127.0.0.1:19999/
 
 You can go to the Nomad UI Jobs page to see all running jobs.
 
