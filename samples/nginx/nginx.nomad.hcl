@@ -12,6 +12,7 @@ job "nginx" {
       }
       port "http" {
         static = 8888
+        to = 80
       }
     }
 
