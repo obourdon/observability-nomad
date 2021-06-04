@@ -17,58 +17,92 @@ if ! unzip -q nomad.zip; then
   exit 1
 fi
 sudo install nomad /opt/bin/nomad
-sudo mkdir -p /etc/nomad.d /etc/nomad /opt/nomad/data/
+sudo mkdir -p /etc/nomad.d /etc/nomad /opt/nomad/data/ /etc/consul.d
 # Error due to Flatcar default filesystems permissons restrictions
 #nomad -autocomplete-install
+
+# Node exporter registration as Consul service
 (
 cat <<-EOF
-  [Unit]
-  Description=consul agent
-  Requires=network-online.target
-  After=network-online.target
+{
+  "service": {
+    "name": "node-exporter",
+    "port": 9100,
+    "checks": [
+      {
+        "http":     "http://localhost:9100/health",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/node-exporter.json
 
-  [Service]
-  Restart=on-failure
-  ExecStart=/opt/bin/consul agent -dev -client=0.0.0.0
-  ExecReload=/bin/kill -HUP $MAINPID
+# Consul service systemd startup script
+(
+cat <<-EOF
+[Unit]
+Description=consul agent
+Requires=network-online.target
+After=network-online.target
 
-  [Install]
-  WantedBy=multi-user.target
+[Service]
+Restart=on-failure
+ExecStart=/opt/bin/consul agent -dev -client=0.0.0.0 -config-dir=/etc/consul.d
+ExecReload=/bin/kill -HUP $MAINPID
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
+
 EOF
 ) | sudo tee /etc/systemd/system/consul.service
+
+# Enable and start Consul systemd service
 sudo systemctl enable consul.service
 sudo systemctl start consul
 
+# Nomad configuration
 (
 cat <<-EOF
-  data_dir  = "/opt/nomad/data/"
-  bind_addr = "0.0.0.0"
-  plugin "docker" {
-    config {
-      volumes {
-        enabled = true
-      }
+data_dir  = "/opt/nomad/data/"
+bind_addr = "0.0.0.0"
+plugin "docker" {
+  config {
+    volumes {
+      enabled = true
     }
   }
+}
+
 EOF
-  ) | sudo tee /etc/nomad/config.hcl
+) | sudo tee /etc/nomad/config.hcl
+
+# Nomad service systemd startup script
 (
 cat <<-EOF
-  [Unit]
-  Description=nomad dev agent
-  Requires=network-online.target
-  After=network-online.target
+[Unit]
+Description=nomad dev agent
+Requires=network-online.target
+After=network-online.target
 
-  [Service]
-  Environment=PATH=/opt/bin:/usr/sbin:/usr/bin:/sbin:/bin
-  Restart=on-failure
-  ExecStart=/opt/bin/nomad agent -dev-connect -config=/etc/nomad/config.hcl
-  ExecReload=/bin/kill -HUP $MAINPID
+[Service]
+Environment=PATH=/opt/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Restart=on-failure
+ExecStart=/opt/bin/nomad agent -dev-connect -config=/etc/nomad/config.hcl
+ExecReload=/bin/kill -HUP $MAINPID
+StandardOutput=journal+console
+StandardError=journal+console
 
-  [Install]
-  WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
+
 EOF
 ) | sudo tee /etc/systemd/system/nomad.service
+
+# Enable and start Nomad systemd service
 sudo systemctl enable nomad.service
 sudo systemctl start nomad
 
