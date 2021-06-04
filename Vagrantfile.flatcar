@@ -6,17 +6,6 @@ $script = <<SCRIPT
 # Nomad 1.x required due to Nomad jobs manifests
 #
 echo "Installing Nomad..."
-NOMAD_VERSION=1.0.5
-cd /tmp/
-if ! curl --fail -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o nomad.zip 2>/dev/null; then
-  echo "Failed to download Nomad $NOMAD_VERSION"
-  exit 1
-fi
-if ! unzip -q nomad.zip; then
-  echo "Failed to extract Nomad $NOMAD_VERSION"
-  exit 1
-fi
-sudo install nomad /opt/bin/nomad
 sudo mkdir -p /etc/nomad.d /etc/nomad /opt/nomad/data/ /etc/consul.d
 # Error due to Flatcar default filesystems permissons restrictions
 #nomad -autocomplete-install
@@ -39,6 +28,50 @@ cat <<-EOF
 }
 EOF
 ) | sudo tee /etc/consul.d/node-exporter.json
+
+# cAdvisor registration as Consul service
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "cadvisor",
+    "port": 8080,
+    "tags": ["monitoring"],
+    "checks": [
+      {
+        "http":     "http://localhost:8080",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/cadvisor.json
+
+# cAdvisor service systemd startup script
+(
+cat <<-EOF
+[Unit]
+Description=cAdvisor containers monitoring from Google
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+# Default port is 8080
+ExecStart=/opt/bin/cadvisor
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+) | sudo tee /etc/systemd/system/cadvisor.service
+
+# Enable and start cAdvisor systemd service
+sudo systemctl enable cadvisor.service
+sudo systemctl start cadvisor
 
 # Consul service systemd startup script
 (
@@ -351,6 +384,8 @@ Vagrant.configure(2) do |config|
   config.vm.network "forwarded_port", guest: 8001, host: 8001
   # Nginx
   config.vm.network "forwarded_port", guest: 8888, host: 8888
+  # cAdvisor
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
 
   # Increase memory for Parallels Desktop
   config.vm.provider "parallels" do |p, o|
