@@ -53,6 +53,10 @@ scrape_configs:
         regex:         '(.*)'
         target_label:  'instance'
         replacement:   '$1'
+      - source_labels: ['__meta_consul_tags']
+        regex:         '.*,metrics_path=(.*),.*'
+        target_label:  '__metrics_path__'
+        replacement:   '$1'
 EOTC
         destination = "/local/prometheus.yml"
       }

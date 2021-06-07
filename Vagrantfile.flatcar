@@ -18,10 +18,10 @@ cat <<-EOF
     "name": "netdata",
     "address": "172.17.0.1",
     "port": 19999,
-    "tags": ["monitoring","prometheus"],
+    "tags": ["monitoring","prometheus","metrics_path=/api/v1/allmetrics?format=prometheus"],
     "checks": [
       {
-        "http":     "http://localhost:19999/api/v1/allmetrics",
+        "http":     "http://localhost:19999/",
         "interval": "10s"
       }
     ]
