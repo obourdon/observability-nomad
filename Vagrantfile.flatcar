@@ -16,11 +16,12 @@ cat <<-EOF
 {
   "service": {
     "name": "netdata",
+    "address": "172.17.0.1",
     "port": 19999,
-    "tags": ["monitoring"],
+    "tags": ["monitoring","prometheus"],
     "checks": [
       {
-        "http":     "http://localhost:19999/",
+        "http":     "http://localhost:19999/api/v1/allmetrics",
         "interval": "10s"
       }
     ]
@@ -39,8 +40,9 @@ cat <<-EOF
 {
   "service": {
     "name": "node-exporter",
+    "address": "172.17.0.1",
     "port": 9100,
-    "tags": ["monitoring"],
+    "tags": ["monitoring","prometheus"],
     "checks": [
       {
         "http":     "http://localhost:9100/health",
