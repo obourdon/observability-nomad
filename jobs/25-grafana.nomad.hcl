@@ -80,6 +80,11 @@ EOTC
         mode        = "file"
         destination = "/local/grafana/dashboards/docker.json"
       }
+      artifact {
+        source      = "https://raw.githubusercontent.com/obourdon/observability-nomad/sqsc/provisioning/node-exporter-dashboard.json"
+        mode        = "file"
+        destination = "/local/grafana/dashboards/node-exporter.json"
+      }
 
       resources {
         cpu    = 100
