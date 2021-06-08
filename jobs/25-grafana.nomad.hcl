@@ -75,6 +75,11 @@ EOTC
         mode        = "file"
         destination = "/local/grafana/dashboards/tns.json"
       }
+      artifact {
+        source      = "https://raw.githubusercontent.com/obourdon/observability-nomad/sqsc/provisioning/docker-dashboard.json"
+        mode        = "file"
+        destination = "/local/grafana/dashboards/docker.json"
+      }
 
       resources {
         cpu    = 100
