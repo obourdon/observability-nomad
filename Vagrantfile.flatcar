@@ -101,6 +101,27 @@ EOF
 sudo systemctl enable cadvisor.service
 sudo systemctl start cadvisor
 
+# Nginx exporter registration as Consul service
+# and Prometheus target
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "nginx-exporter",
+    "address": "172.17.0.1",
+    "port": 9113,
+    "tags": ["monitoring","prometheus"],
+    "checks": [
+      {
+        "http":     "http://localhost:9113",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/nginx-exporter.json
+
 # Consul service systemd startup script
 (
 cat <<-EOF
@@ -259,27 +280,6 @@ if ! tar zxf nginx_exporter.tgz nginx-prometheus-exporter; then
   exit 1
 fi
 sudo install nginx-prometheus-exporter /opt/bin/nginx-prometheus-exporter
-
-# Nginx exporter registration as Consul service
-# and Prometheus target
-(
-cat <<-EOF
-{
-  "service": {
-    "name": "nginx-exporter",
-    "address": "172.17.0.1",
-    "port": 9113,
-    "tags": ["monitoring","prometheus"],
-    "checks": [
-      {
-        "http":     "http://localhost:9113",
-        "interval": "10s"
-      }
-    ]
-  }
-}
-EOF
-) | sudo tee /etc/consul.d/nginx-exporter.json
 
 # Nginx exporter service systemd startup script
 (
