@@ -43,6 +43,9 @@ scrape_configs:
       - source_labels: [__meta_consul_tags]
         regex: '.*,prometheus,.*'
         action: keep
+      - source_labels: [__meta_consul_service]
+        regex: '.*-sidecar-proxy'
+        action: drop
       - source_labels: [__meta_consul_tags]
         regex: ',(app|monitoring),'
         target_label:  'group'
