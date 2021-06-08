@@ -85,6 +85,11 @@ EOTC
         mode        = "file"
         destination = "/local/grafana/dashboards/node-exporter.json"
       }
+      artifact {
+        source      = "https://raw.githubusercontent.com/obourdon/observability-nomad/sqsc/provisioning/cadvisor-dashboard.json"
+        mode        = "file"
+        destination = "/local/grafana/dashboards/cadvisor.json"
+      }
 
       resources {
         cpu    = 100
