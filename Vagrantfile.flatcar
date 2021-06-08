@@ -35,6 +35,7 @@ sudo systemctl enable netdata.service
 sudo systemctl start netdata
 
 # Node exporter registration as Consul service
+# and Prometheus target
 (
 cat <<-EOF
 {
@@ -55,6 +56,7 @@ EOF
 ) | sudo tee /etc/consul.d/node-exporter.json
 
 # cAdvisor registration as Consul service
+# and Prometheus target
 (
 cat <<-EOF
 {
@@ -207,7 +209,7 @@ echo "Installing Grafana stack..."
 
 until nomad status
 do
-  echo "Waiting nomad to be ready...."
+  echo "Waiting for Nomad to be ready...."
   sleep 3
 done
 
@@ -240,8 +242,71 @@ EXTERNALDNS=${EXTERNALDNS:-"1.1.1.1"}
 sudo sed -i -e "s/#DNS=/DNS=127.0.0.1 ${EXTERNALDNS}/" -e 's/#Domains=/Domains=~consul/' /etc/systemd/resolved.conf
 sudo systemctl restart systemd-resolved
 
+while [ "$(dig +short nginx.service.dc1.consul)" == "" ]; do
+  echo "Waiting for Nginx to be ready...."
+  sleep 10
+done
+
+# Nginx exporter registration as Consul service
+# and Prometheus target
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "nginx-exporter",
+    "address": "172.17.0.1",
+    "port": 9113,
+    "tags": ["monitoring","prometheus"],
+    "checks": [
+      {
+        "http":     "http://localhost:9113",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/nginx-exporter.json
+
+# Nginx exporter service systemd startup script
+(
+cat <<-EOF
+#!/usr/bin/env bash
+
+/opt/bin/nginx-prometheus-exporter -nginx.scrape-uri http://$(dig +short nginx.service.dc1.consul):8888/stub_status
+
+EOF
+) | sudo tee /opt/bin/nginx-exporter.sh
+
+sudo chmod 755 /opt/bin/nginx-exporter.sh
+
+# Nginx exporter service systemd startup script
+(
+cat <<-EOF
+[Unit]
+Description=Nginx monitoring
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+# Default port is 9113
+ExecStart=/opt/bin/nginx-exporter.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+) | sudo tee /etc/systemd/system/nginx-exporter.service
+
+# Enable and start Nginx exporter systemd service
+sudo systemctl enable nginx-exporter.service
+sudo systemctl start nginx-exporter
+
 while [ "$(dig +short loki.service.dc1.consul)" == "" ]; do
-  echo "Waiting Loki to be ready...."
+  echo "Waiting for Loki to be ready...."
   sleep 10
 done
 
