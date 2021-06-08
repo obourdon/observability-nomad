@@ -247,6 +247,19 @@ while [ "$(dig +short nginx.service.dc1.consul)" == "" ]; do
   sleep 10
 done
 
+echo "Installing Nginx exporter..."
+NGINX_EXPORTER_VERSION=0.9.0
+cd /tmp/
+if ! curl --fail -sSL https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${NGINX_EXPORTER_VERSION}/nginx-prometheus-exporter_${NGINX_EXPORTER_VERSION}_linux_amd64.tar.gz -o nginx_exporter.tgz 2>/dev/null; then
+  echo "Failed to download Nginx exporter NGINX_EXPORTER_VERSION"
+  exit 1
+fi
+if ! tar zxf nginx_exporter.tgz nginx-prometheus-exporter; then
+  echo "Failed to extract Nginx exporter $NGINX_EXPORTER_VERSION"
+  exit 1
+fi
+sudo install nginx-prometheus-exporter /opt/bin/nginx-prometheus-exporter
+
 # Nginx exporter registration as Consul service
 # and Prometheus target
 (
@@ -385,19 +398,6 @@ EOF
 ) | sudo tee /etc/systemd/system/nginx-load-gen.service
 sudo systemctl enable nginx-load-gen.service
 sudo systemctl start nginx-load-gen
-
-echo "Installing Nginx exporter..."
-NGINX_EXPORTER_VERSION=0.9.0
-cd /tmp/
-if ! curl --fail -sSL https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${NGINX_EXPORTER_VERSION}/nginx-prometheus-exporter_${NGINX_EXPORTER_VERSION}_linux_amd64.tar.gz -o nginx_exporter.tgz 2>/dev/null; then
-  echo "Failed to download Nginx exporter NGINX_EXPORTER_VERSION"
-  exit 1
-fi
-if ! tar zxf nginx_exporter.tgz nginx-prometheus-exporter; then
-  echo "Failed to extract Nginx exporter $NGINX_EXPORTER_VERSION"
-  exit 1
-fi
-sudo install nginx-prometheus-exporter /opt/bin/nginx-prometheus-exporter
 
 SCRIPT
 
