@@ -399,6 +399,12 @@ EOF
 sudo systemctl enable nginx-load-gen.service
 sudo systemctl start nginx-load-gen
 
+# Create default deny all intention for Consul Connect Service Mesh
+# because default Consul ACL Policy for dev agent is "allow all"
+# see: https://learn.hashicorp.com/tutorials/consul/service-mesh-with-envoy-proxy#create-a-consul-intention
+echo "Configuring Consul Connect Service Mesh default intention (deny all)"
+consul intention create -deny '*' '*'
+
 SCRIPT
 
 Vagrant.configure(2) do |config|
