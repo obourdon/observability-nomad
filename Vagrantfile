@@ -25,7 +25,7 @@ sudo docker --version
 sudo apt-get install unzip curl vim -y
 
 echo "Installing Nomad..."
-NOMAD_VERSION=1.1.3
+NOMAD_VERSION=1.1.5
 cd /tmp/
 if ! curl --fail -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o nomad.zip 2>/dev/null; then
   echo "Failed to download Nomad $NOMAD_VERSION"
@@ -40,7 +40,7 @@ sudo mkdir -p /etc/nomad.d
 sudo chmod a+w /etc/nomad.d
 
 echo "Installing CNI plugins..."
-CNI_VERSION=1.0.0
+CNI_VERSION=1.0.1
 if ! curl --fail -sL -o cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v${CNI_VERSION}/cni-plugins-linux-amd64-v${CNI_VERSION}.tgz 2>/dev/null; then
   echo "Failed to download CNI plugins $CNI_VERSION"
   exit 1
@@ -49,7 +49,7 @@ sudo mkdir -p /opt/cni/bin
 sudo tar -C /opt/cni/bin -xzf cni-plugins.tgz
 
 echo "Installing Consul..."
-CONSUL_VERSION=1.10.1
+CONSUL_VERSION=1.10.2
 if ! curl --fail -sSL https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip > consul.zip 2>/dev/null; then
   echo "Failed to download Consul $CONSUL_VERSION"
   exit 1
