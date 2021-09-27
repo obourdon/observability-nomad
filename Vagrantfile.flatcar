@@ -376,6 +376,27 @@ EOF
 sudo systemctl enable promtail.service
 sudo systemctl start promtail
 
+# Promtail registration as Consul service
+# and Prometheus target
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "promtail-host",
+    "address": "172.17.0.1",
+    "port": 9080,
+    "tags": ["monitoring","prometheus"],
+    "checks": [
+      {
+        "http":     "http://localhost:9080/metrics",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/promtail.json
+
 sudo chmod 755 /tmp/samples/nginx/load_gen.sh
 
 # Nginx load generator
