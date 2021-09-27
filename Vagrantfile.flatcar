@@ -67,7 +67,7 @@ cat <<-EOF
     "tags": ["monitoring","prometheus"],
     "checks": [
       {
-        "http":     "http://localhost:8080",
+        "http":     "http://localhost:8080/metrics",
         "interval": "10s"
       }
     ]
