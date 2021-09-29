@@ -32,32 +32,28 @@ scrape_configs:
     consul_sd_configs:
       - server: '172.17.0.1:8500'
     relabel_configs:
-      - source_labels: [__meta_consul_service_metadata_external_source]
-        target_label: source
-        regex: (.*)
-        replacement: '$1'
-      - source_labels: [__meta_consul_service_id]
-        regex: '_nomad-task-([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-.*'
-        target_label:  'task_id'
-        replacement: '$1'
       - source_labels: [__meta_consul_tags]
         regex: '.*,prometheus,.*'
         action: keep
       - source_labels: [__meta_consul_service]
         regex: '.*-sidecar-proxy'
         action: drop
+      - source_labels: [__meta_consul_service]
+        target_label: 'job'
+      - source_labels: [__meta_consul_node]
+        target_label:  'instance'
+      - source_labels: [__meta_consul_service_metadata_external_source]
+        target_label: 'source'
+      - source_labels: [__meta_consul_service_id]
+        regex: '_nomad-task-([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-.*'
+        target_label:  'task_id'
+        replacement: '$1'
       - source_labels: [__meta_consul_tags]
-        regex: ',(app|monitoring),'
+        regex: '.*,(app|monitoring),.*'
         target_label:  'group'
         replacement:   '$1'
-      - source_labels: [__meta_consul_service]
-        target_label: job
-      - source_labels: ['__meta_consul_node']
-        regex:         '(.*)'
-        target_label:  'instance'
-        replacement:   '$1'
-      - source_labels: ['__meta_consul_tags']
-        regex:         '.*,metrics_path=(.*),.*'
+      - source_labels: [__meta_consul_tags]
+        regex:         '.*,metrics_path=([^,]*),.*'
         target_label:  '__metrics_path__'
         replacement:   '$1'
 EOTC
