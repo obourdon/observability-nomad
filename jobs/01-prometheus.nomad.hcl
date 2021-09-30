@@ -64,7 +64,7 @@ EOTC
         destination = "/local/prometheus.yml"
       }
       config {
-        image = "prom/prometheus:v2.28.1"
+        image = "obourdon/prometheus:v2.28.1"
         ports = ["http"]
         args = [
           "--config.file=/local/prometheus.yml",
