@@ -42,6 +42,26 @@ cat <<-EOF
 EOF
 ) | sudo tee /etc/consul.d/consul.json
 
+# Nomad registration as a Consul service for Prometheus scraping
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "nomad-service",
+    "address": "172.17.0.1",
+    "port": 4646,
+    "tags": ["monitoring","prometheus","source=system","metrics_path=/v1/metrics?format=prometheus"],
+    "checks": [
+      {
+        "http":     "http://172.17.0.1:4646/",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/nomad.json
+
 # Netdata registration as Consul service
 (
 cat <<-EOF
@@ -190,6 +210,11 @@ plugin "docker" {
       enabled = true
     }
   }
+}
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics       = true
+  prometheus_metrics         = true
 }
 EOF
 ) | sudo tee /etc/nomad/config.hcl
