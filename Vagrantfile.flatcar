@@ -159,7 +159,6 @@ plugin "docker" {
     }
   }
 }
-
 EOF
 ) | sudo tee /etc/nomad/config.hcl
 
@@ -419,6 +418,9 @@ EOF
 ) | sudo tee /etc/systemd/system/nginx-load-gen.service
 sudo systemctl enable nginx-load-gen.service
 sudo systemctl start nginx-load-gen
+
+# Reload Consul configuration for late arrivals
+sudo pkill -HUP -f /opt/bin/consul
 
 # Create default deny all intention for Consul Connect Service Mesh
 # because default Consul ACL Policy for dev agent is "allow all"
