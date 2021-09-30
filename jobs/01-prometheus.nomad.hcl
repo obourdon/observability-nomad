@@ -49,7 +49,7 @@ scrape_configs:
         target_label:  'task_id'
         replacement: '$1'
       - source_labels: [__meta_consul_tags]
-        regex: '.*,(app|monitoring),.*'
+        regex: '.*,(app|monitoring|demo),.*'
         target_label:  'group'
         replacement:   '$1'
       - source_labels: [__meta_consul_tags]
