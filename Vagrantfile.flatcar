@@ -10,6 +10,38 @@ sudo mkdir -p /etc/nomad.d /etc/nomad /opt/nomad/data/ /etc/consul.d
 # Error due to Flatcar default filesystems permissons restrictions
 #nomad -autocomplete-install
 
+# Consul telemetry parameters
+(
+cat <<-EOF
+{
+  "telemetry": {
+    "prometheus_retention_time": "2h",
+    "disable_hostname": false
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/telemetry.json
+
+# Consul registration as a Consul service for Prometheus scraping
+(
+cat <<-EOF
+{
+  "service": {
+    "name": "consul-service",
+    "address": "172.17.0.1",
+    "port": 8500,
+    "tags": ["monitoring","prometheus","source=system","metrics_path=/v1/agent/metrics?format=prometheus"],
+    "checks": [
+      {
+        "http":     "http://172.17.0.1:8500/",
+        "interval": "10s"
+      }
+    ]
+  }
+}
+EOF
+) | sudo tee /etc/consul.d/consul.json
+
 # Netdata registration as Consul service
 (
 cat <<-EOF
