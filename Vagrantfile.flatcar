@@ -18,7 +18,7 @@ cat <<-EOF
     "name": "netdata",
     "address": "172.17.0.1",
     "port": 19999,
-    "tags": ["monitoring","prometheus","metrics_path=/api/v1/allmetrics?format=prometheus"],
+    "tags": ["monitoring","prometheus","source=system","metrics_path=/api/v1/allmetrics?format=prometheus"],
     "checks": [
       {
         "http":     "http://localhost:19999/",
@@ -43,7 +43,7 @@ cat <<-EOF
     "name": "node-exporter",
     "address": "172.17.0.1",
     "port": 9100,
-    "tags": ["monitoring","prometheus"],
+    "tags": ["monitoring","prometheus","source=system"],
     "checks": [
       {
         "http":     "http://localhost:9100/health",
@@ -64,7 +64,7 @@ cat <<-EOF
     "name": "cadvisor",
     "address": "172.17.0.1",
     "port": 8080,
-    "tags": ["monitoring","prometheus"],
+    "tags": ["monitoring","prometheus","source=system"],
     "checks": [
       {
         "http":     "http://localhost:8080/metrics",
@@ -110,7 +110,7 @@ cat <<-EOF
     "name": "nginx-exporter",
     "address": "172.17.0.1",
     "port": 9113,
-    "tags": ["monitoring","prometheus"],
+    "tags": ["monitoring","prometheus","source=system"],
     "checks": [
       {
         "http":     "http://localhost:9113",
@@ -381,10 +381,10 @@ sudo systemctl start promtail
 cat <<-EOF
 {
   "service": {
-    "name": "promtail-host",
+    "name": "promtail",
     "address": "172.17.0.1",
     "port": 9080,
-    "tags": ["monitoring","prometheus"],
+    "tags": ["monitoring","prometheus","source=system"],
     "checks": [
       {
         "http":     "http://localhost:9080/metrics",
