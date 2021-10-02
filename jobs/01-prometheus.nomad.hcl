@@ -53,9 +53,13 @@ scrape_configs:
         target_label:  'group'
         replacement:   '$1'
       - source_labels: [__meta_consul_tags]
-        regex:         '.*,metrics_path=([^,]*),.*'
+        regex: '.*,metrics_path=([^,?]*)[?,].*'
         target_label:  '__metrics_path__'
-        replacement:   '$1'
+        replacement: '$1'
+      - source_labels: [__meta_consul_tags]
+        regex: '.*,metrics_path=([^,?]*)\?format=([^,]*),.*'
+        target_label:  '__param_format'
+        replacement: '$2'
       - source_labels: [__meta_consul_tags]
         regex:         '.*,source=([^,]*),.*'
         target_label:  'source'
@@ -64,7 +68,7 @@ EOTC
         destination = "/local/prometheus.yml"
       }
       config {
-        image = "obourdon/prometheus:v2.28.1"
+        image = "prom/prometheus:v2.28.1"
         ports = ["http"]
         args = [
           "--config.file=/local/prometheus.yml",
