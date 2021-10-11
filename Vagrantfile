@@ -25,7 +25,7 @@ sudo docker --version
 sudo apt-get install unzip curl vim -y
 
 echo "Installing Nomad..."
-NOMAD_VERSION=1.1.5
+NOMAD_VERSION=1.1.6
 cd /tmp/
 if ! curl --fail -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o nomad.zip 2>/dev/null; then
   echo "Failed to download Nomad $NOMAD_VERSION"
