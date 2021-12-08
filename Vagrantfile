@@ -49,7 +49,7 @@ sudo mkdir -p /opt/cni/bin
 sudo tar -C /opt/cni/bin -xzf cni-plugins.tgz
 
 echo "Installing Consul..."
-CONSUL_VERSION=1.10.3
+CONSUL_VERSION=1.10.4
 if ! curl --fail -sSL https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip > consul.zip 2>/dev/null; then
   echo "Failed to download Consul $CONSUL_VERSION"
   exit 1
