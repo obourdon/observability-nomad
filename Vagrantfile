@@ -40,7 +40,7 @@ sudo mkdir -p /etc/nomad.d
 sudo chmod a+w /etc/nomad.d
 
 echo "Installing CNI plugins..."
-CNI_VERSION=1.0.1
+CNI_VERSION=1.4.1
 if ! curl --fail -sL -o cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v${CNI_VERSION}/cni-plugins-linux-amd64-v${CNI_VERSION}.tgz 2>/dev/null; then
   echo "Failed to download CNI plugins $CNI_VERSION"
   exit 1
