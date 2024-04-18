@@ -67,6 +67,7 @@ cat <<-EOF
   After=network-online.target
 
   [Service]
+  Environment=HOME=/tmp
   Restart=on-failure
   ExecStart=/usr/bin/consul agent -dev -client=0.0.0.0
   ExecReload=/bin/kill -HUP $MAINPID

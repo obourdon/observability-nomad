@@ -183,6 +183,7 @@ Requires=network-online.target
 After=network-online.target
 
 [Service]
+Environment=HOME=/tmp
 Restart=on-failure
 ExecStart=/opt/bin/consul agent -dev -client=0.0.0.0 -config-dir=/etc/consul.d
 ExecReload=/bin/kill -HUP $MAINPID
