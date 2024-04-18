@@ -34,7 +34,7 @@ job "tempo" {
       }
 
       artifact {
-        source      = "https://raw.githubusercontent.com/grafana/tempo/master/example/docker-compose/local/tempo-local.yaml"
+        source      = "https://raw.githubusercontent.com/grafana/tempo/master/example/docker-compose/shared/tempo.yaml"
         mode        = "file"
         destination = "/local/tempo.yml"
       }
